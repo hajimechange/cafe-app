@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       contents: [{
         parts: [{
           // プロンプトを整理し、出力を制御する
+// --- ここから差し替え ---
 const promptText = `
 Role: 親しみやすい中学校の英語の先生。
 # 鉄の掟 (Strict Rules):
@@ -36,11 +37,10 @@ const body = {
   contents: [{
     parts: [{
       text: promptText
-   
-          
-        }]
-      }]
-    };
+    }]
+  }]
+};
+// --- ここまで差し替え ---
 
     const response = await fetch(apiUrl, {
       method: "POST",
