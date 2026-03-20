@@ -36,10 +36,8 @@ const body = {
   contents: [{
     parts: [{
       text: promptText
-    }]
-  }]
-};
-          `
+   
+          
         }]
       }]
     };
