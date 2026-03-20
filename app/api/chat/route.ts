@@ -8,10 +8,7 @@ export async function POST(req: Request) {
     // 河合さんの環境で動作確認済みの 2.5-flash を使用
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-    const body = {
-      contents: [{
-        parts: [{
-          // プロンプトを整理し、出力を制御する
+   
 // --- ここから差し替え ---
 const promptText = `
 Role: 親しみやすい中学校の英語の先生。
