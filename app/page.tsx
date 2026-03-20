@@ -82,35 +82,26 @@ export default function CafeApp() {
               </div>
             )}
             
-            {messages.map((m, i) => {
-              const isAI = m.role === 'model';
-              // AIの返答を分割するロジック
-              const parts = m.content.split('[日本語アドバイス]');
-              const english = parts[0].replace('[English Response]', '').trim();
-              const japanese = parts[1]?.trim();
-              const hasAdvice = japanese && !japanese.toLowerCase().includes("good job") && !japanese.includes("バッチリ");
+           {messages.map((m, i) => {
+  const isAI = m.role === 'model';
+  const isAdvice = isAI && m.content.includes("【アドバイス】");
 
-              return (
-                <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} space-y-2`}>
-                  {/* メイン吹き出し */}
-                  <div className={`max-w-[85%] p-4 rounded-2xl text-lg shadow-sm ${
-                    m.role === 'user' 
-                      ? 'bg-green-500 text-white rounded-tr-none' 
-                      : 'bg-gray-200 text-gray-800 rounded-tl-none'
-                  }`}>
-                    {isAI ? english : m.content}
-                  </div>
-
-                  {/* 1つ目の機能：日本語アドバイス（必要な時だけ） */}
-                  {isAI && hasAdvice && (
-                    <div className="max-w-[75%] p-3 bg-yellow-50 border border-yellow-200 text-gray-700 text-sm rounded-xl rounded-tl-none shadow-sm ml-2">
-                      <span className="font-bold text-yellow-700">💡 Advice:</span><br />
-                      {japanese}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+  return (
+    <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} space-y-2`}>
+      <div className={`max-w-[85%] p-4 rounded-2xl text-lg shadow-sm ${
+        m.role === 'user' 
+          ? 'bg-green-500 text-white rounded-tr-none' 
+          : isAdvice 
+            ? 'bg-yellow-50 border border-yellow-200 text-gray-700 rounded-xl rounded-tl-none italic' // アドバイスなら黄色
+            : 'bg-gray-200 text-gray-800 rounded-tl-none' // 普通の会話ならグレー
+      }`}>
+        {/* アドバイスの場合は先頭に電球アイコンを付ける */}
+        {isAdvice && <span className="font-bold text-yellow-700 block mb-1">💡 Teacher's Check:</span>}
+        {m.content}
+      </div>
+    </div>
+  );
+})}
             
             {isLoading && (
               <div className="text-gray-400 animate-pulse text-sm">AI Teacher is thinking...</div>
