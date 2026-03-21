@@ -2,51 +2,26 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { message } = await req.json();
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
+    if (!apiKey) return NextResponse.json({ response: "APIキーが設定されていません。" });
 
-    if (!apiKey) {
-      return NextResponse.json({ response: "APIキーが設定されていません。" });
+    // 【核心】Googleに使用可能なモデルを直接聞き出す
+    const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    const res = await fetch(listUrl);
+    const data = await res.json();
+
+    if (data.error) {
+      return NextResponse.json({ response: `APIエラー: ${data.error.message}` });
     }
 
-    // --- 修正ポイント：URLを v1beta に戻し、モデル名を単体で指定する形式 ---
-    const model = "gemini-1.5-flash";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    // モデル名だけを抜き出して表示する
+    const modelNames = data.models?.map((m: any) => m.name).join('\n') || "モデルが見つかりません";
 
-    const promptText = `
-Role: 中学校の英語教師。
-# Logic:
-1. 英語にミスがあれば日本語の【アドバイス】のみ出力。
-2. ミスがなければ英語のみで「1.反応 2.意見 3.質問」の3文で出力。
-User Message: ${message}
-`;
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }]
-      }),
+    return NextResponse.json({ 
+      response: `【重要：以下の名前のいずれかを使ってください】\n\n${modelNames}` 
     });
 
-    const data = await response.json();
-
-    // エラーが出た場合の詳細を画面に出す
-    if (data.error) {
-      return NextResponse.json({ 
-        response: `API Error (${data.error.code}): ${data.error.message}` 
-      });
-    }
-
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!aiResponse) {
-      return NextResponse.json({ response: "AIからの返答が空でした。内容を確認してください。" });
-    }
-
-    return NextResponse.json({ response: aiResponse });
-
   } catch (error) {
-    return NextResponse.json({ response: "通信エラーが発生しました。" });
+    return NextResponse.json({ response: "リスト取得中にエラーが発生しました。" });
   }
 }
