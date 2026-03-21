@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "API Key not found" }, { status: 500 });
     }
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const promptText = `
 Role: 中学校の英語教師。「CAFE App」のAI講師。
