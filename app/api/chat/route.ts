@@ -6,20 +6,20 @@ export async function POST(req: Request) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: "API Key not found" }, { status: 500 });
+      return NextResponse.json({ response: "APIキーが設定されていません。" });
     }
 
-    // 安定版の1.5-flashを使用
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // --- 修正ポイント：URLを v1beta から v1 に、モデル名を確実な形式に変更 ---
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const promptText = `
 Role: 中学校の英語教師。
 # Logic Flow:
-1. ユーザーの英語にミスや不自然さがあるか確認せよ。
+1. ユーザーの英語にミスや不自然さがあるか確認。
 2. 【ミスがある場合】:
-   - 日本語の【アドバイス】のみを1点出力。「もう一度直して送ってみてね！」と添える。
+   - 日本語の【アドバイス】のみを1点出力。「もう一度直して送ってみてね！」と添える。英語の返答はしない。
 3. 【ミスがない場合】:
-   - 英語のみで「1.反応 2.意見 3.質問」の3文構成で出力。
+   - 英語のみで「1.反応 2.意見 3.質問」の3文構成で出力。日本語は書かない。
 
 User Message: ${message}
 `;
@@ -34,18 +34,20 @@ User Message: ${message}
 
     const data = await response.json();
 
-    // --- ここが修正ポイント：Geminiのデータ構造に厳密に合わせる ---
+    // エラーレスポンスが返ってきた場合の詳細表示
+    if (data.error) {
+      return NextResponse.json({ response: `API Error (${data.error.code}): ${data.error.message}` });
+    }
+
     const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiResponse) {
-      console.error("Gemini Error Detail:", JSON.stringify(data));
-      return NextResponse.json({ response: "AIからの返答が空でした。設定を確認してください。" });
+      return NextResponse.json({ response: "Geminiからの返答が空でした。内容を確認してください。" });
     }
 
     return NextResponse.json({ response: aiResponse });
 
   } catch (error) {
-    console.error("API Error:", error);
-    return NextResponse.json({ response: "サーバーでエラーが発生しました。" });
+    return NextResponse.json({ response: "通信エラーが発生しました。ネットワークを確認してください。" });
   }
 }
