@@ -9,9 +9,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ response: "APIキーが設定されていません。" });
     }
 
-    // 1.5-flash は無料枠が広く、429エラーが最も起きにくいモデルです
-    const modelName = "models/gemini-1.5-flash";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`;
+    // --- 修正ポイント：URLを v1beta に戻し、モデル名を単体で指定する形式 ---
+    const model = "gemini-1.5-flash";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const promptText = `
 Role: 中学校の英語教師。
@@ -31,17 +31,17 @@ User Message: ${message}
 
     const data = await response.json();
 
+    // エラーが出た場合の詳細を画面に出す
     if (data.error) {
-      // 429エラーが出た場合、具体的な待ち時間を表示する
       return NextResponse.json({ 
-        response: `API制限中です (${data.error.code})。少し時間を置いて再試行してください。理由: ${data.error.message}` 
+        response: `API Error (${data.error.code}): ${data.error.message}` 
       });
     }
 
     const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiResponse) {
-      return NextResponse.json({ response: "AIの返答が空でした。もう一度送信してください。" });
+      return NextResponse.json({ response: "AIからの返答が空でした。内容を確認してください。" });
     }
 
     return NextResponse.json({ response: aiResponse });
