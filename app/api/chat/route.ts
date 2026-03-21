@@ -9,8 +9,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ response: "APIキーが設定されていません。" });
     }
 
-    // --- 修正ポイント：URLを v1beta から v1 に、モデル名を確実な形式に変更 ---
-    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // --- 修正ポイント：モデル名を「gemini-pro」に、バージョンを「v1beta」に戻す ---
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
     const promptText = `
 Role: 中学校の英語教師。
